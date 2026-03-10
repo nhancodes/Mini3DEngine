@@ -4,7 +4,6 @@
     {
       "name": "windows_msvc",
       "displayName": "Windows MSVC",
-      "binaryDir": "${sourceDir}/__out/build/${presetName}",
       "inherits": [
         "ninja-multi",
         "default-config"
@@ -19,7 +18,6 @@
     {
       "name": "windows_clangcl",
       "displayName": "Windows ClangCL",
-      "binaryDir": "${sourceDir}/__out/build/${presetName}",
       "inherits": [
         "ninja-multi",
         "default-config"

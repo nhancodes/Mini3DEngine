@@ -31,7 +31,6 @@
       "name": "windows_default",
       "description": "Windows default configuration",
       "displayName": "Windows Default",
-      "binaryDir": "${sourceDir}/__out/build/${presetName}",
       "inherits": [
         "ninja-multi",
         "default-config"
