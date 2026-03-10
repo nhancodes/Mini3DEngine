@@ -1,13 +1,15 @@
 #include "raylib.h"
 #include "engine.h"
 #include "my_math.h"
+#include <stdio.h>
+
 //#include <math.h>
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
 typedef Matrix3x3 tests [1][2];
 
-bool is_equal_matrix(Matrix3x3 actual_result, Matrix3x3 expected_result) {
+static bool is_equal_matrix(Matrix3x3 actual_result, Matrix3x3 expected_result) {
     // iterate through the actual_result and check the expected_result
     // loop through the rows 
     for (int row = 0; row < 3; row++) {
@@ -22,7 +24,7 @@ bool is_equal_matrix(Matrix3x3 actual_result, Matrix3x3 expected_result) {
     return true;
 }
 
-void print_matrix(Matrix3x3 matrix) {
+static void print_matrix(Matrix3x3 matrix) {
     // iterate through the actual_result and check the expected_result
     // loop through the rows 
     for (int row = 0; row < 3; row++) {
