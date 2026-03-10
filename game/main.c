@@ -77,7 +77,7 @@ int main(void)
     bool result_2 = is_equal_matrix(actual_result_2, expected_result_2);
     printf("result %s\n", result_2 ? "true" : "false");
 
-    return 0;
+    //return 0;
     // Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = 800;
