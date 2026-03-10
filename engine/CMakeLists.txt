@@ -14,4 +14,4 @@ add_library(engine engine.c my_math.c)
 target_include_directories(engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Link Raylib to engine
-target_link_libraries(engine PUBLIC raylib option_target warnings_target)
+target_link_libraries(engine PUBLIC raylib options_target warnings_target)

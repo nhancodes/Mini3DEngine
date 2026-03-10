@@ -13,7 +13,7 @@ include(cmake/CMakePackageManager.cmake)
 include(cmake/ProjectOptions.cmake)
 include(cmake/ProjectWarnings.cmake)
 
-setup_project_options(option_target)
+setup_project_options(options_target)
 setup_project_warnings(warnings_target)
 
 # Add engine subdirectory
@@ -23,4 +23,4 @@ add_subdirectory(engine)
 add_executable(game game/main.c)
 
 # Link game with engine and Raylib
-target_link_libraries(game PRIVATE engine raylib option_target warnings_target)
+target_link_libraries(game PRIVATE engine raylib options_target warnings_target)
