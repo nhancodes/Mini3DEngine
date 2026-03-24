@@ -18,7 +18,7 @@ add_subdirectory(engine)
 add_executable(game game/main.c)
 
 # Include engine headers
-target_include_directories(game PRIVATE engine)
+target_include_directories(game PRIVATE test)
 
 # Link game with engine and Raylib
 target_link_libraries(game PRIVATE engine raylib)

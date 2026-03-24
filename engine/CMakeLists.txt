@@ -8,7 +8,7 @@ CPMAddPackage(
 )
 
 # Build engine library
-add_library(engine engine.c my_math.c)
+add_library(engine STATIC engine.c my_math.c)
 
 # Make headers visible to other targets
 target_include_directories(engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
