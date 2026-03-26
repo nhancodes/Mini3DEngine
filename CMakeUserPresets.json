@@ -7,7 +7,7 @@
       "binaryDir": "${sourceDir}/__out/build/${presetName}",
       "cacheVariables": {
         "CMAKE_GENERATOR": "Ninja Multi-Config",
-        "CMAKE_VERBOSE_MAKEFILE": "ON",
+        "CMAKE_VERBOSE_MAKEFILE": "OFF",
         "CMAKE_MAKE_PROGRAM": "D:/Tools/ninja/ninja.exe",
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl",

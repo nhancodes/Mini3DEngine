@@ -101,6 +101,9 @@ int main(void)
     float r_angle_5 = 0;
     MyMatrix3x3 r_5_actual = axis_angle_rotate( a_5, r_angle_5);
     
+    MyVector3 a_6 = {1, 0, 0};
+    float r_angle_6 = 0;
+    MyMatrix3x3 r_6_actual = axis_angle_rotate( a_6, r_angle_6);
     // Initialization
     //--------------------------------------------------------------------------------------
     const int screenWidth = 1200;
@@ -110,12 +113,14 @@ int main(void)
 
     SetTargetFPS(targetFPS); // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
-    MyVector3 v3 = {.5, .5, .5};
+    MyVector3 v3 = {.25, .25, .25};
     Hexahedron hexadron_model = generate_hexahedron_model(v3);
+    MyVector3 base_v [4] = {{0,0,0},{-1,0,0}, {0,-1,0}, {0,0,-1}};
     //float angle = 0;
-    Vector2 origin_pos = {0,0};
+    //MyVector3 origin_pos = {0,0,0};
     //float dz = 1; 
-    MyVector3 camera_position = {0, 0, 1};
+    MyVector3 camera_position = {-1, -1, 1.5};
+
     MyVector3 dir = {0, 0, 1};
     MyMatrix2x3 roll_angle = {
         .v_x = {0,0,0},
@@ -123,6 +128,79 @@ int main(void)
     };
 
     int f = 0;
+    Int2 mapping_hex [12] = {
+        {0, 4}, 
+        {1, 0}, 
+        {2, 6},
+        {3, 2},
+        {4, 5},
+        {5, 1}, 
+        {6, 7}, 
+        {7, 3},
+        {0, 2},
+        {1, 3},
+        {4, 6},
+        {5, 7}     
+    };
+
+    Color map_hex_color [12] = {
+        { 255, 255, 255, 255 },
+        {  255, 255, 255, 255  },
+        { 255, 255, 255, 255 },
+        {  255, 255, 255, 255  },
+        { 255, 255, 255, 255 },
+        {  255, 255, 255, 255  },
+        { 255, 255, 255, 255 },
+        {  255, 255, 255, 255  },
+        { 255, 255, 255, 255 },
+        {  255, 255, 255, 255  },
+        { 255, 255, 255, 255 },
+        {  255, 255, 255, 255  },
+    };
+
+    Color map_base_color [3] = {
+        { 230, 41, 55, 255 },
+        { 0, 228, 48, 255 },
+        {0, 121, 241, 255 },
+    };
+
+    Base hex = {
+        .v = hexadron_model.model,
+        .v_count = 8,
+        .indices_mapping = mapping_hex,
+        .i_count = 12
+    };
+
+    Int2 mapping_base [3] = {
+        {0, 1}, 
+        {0, 2}, 
+        {0, 3}
+    };
+
+    Base base = {
+        .v = base_v,
+        .v_count = 4,
+        .indices_mapping = mapping_base,
+        .i_count = 3
+    };
+
+    RotationInput rotation_input_base = {
+        .axis = {0,1,0},
+        .angle = 0 
+    };
+
+    MyVector3 scale_input_base = {1,1,1};
+    
+    MyVector3 translation_input_base = {0,0,0};
+
+    RotationInput rotation_input_hex = {
+        .axis = {0,1,0},
+        .angle = 0 
+    };
+
+    MyVector3 scale_input_hex = {1.5,1,1};
+    
+    MyVector3 translation_input_hex = {-.5,-.5,0};
     while (!WindowShouldClose()) // Detect window close button or ESC key
     {
         // Update
@@ -131,23 +209,21 @@ int main(void)
         //----------------------------------------------------------------------------------
         float dt = 1.f/targetFPS;
         //dz += 1 * dt;
-        r_angle_5 += .5f * PI *dt;
         f++;
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
-        ClearBackground(RAYWHITE);
-        Vector2 screen_origin_pos = screen(origin_pos, screenWidth, screenHeight);
-        DrawLine(0,(int)screen_origin_pos.y, screenWidth, (int)screen_origin_pos.y, BLUE);
-        DrawLine((int)screen_origin_pos.x, 0, (int)screen_origin_pos.x, screenHeight, BLUE);
-        Screen s = {
-           .width = screenWidth,
-           .height = screenHeight,
-           .rotation_m_3x3 = r_5_actual,
-           .hexadron = hexadron_model
-        };
-        Coordinates c = screen_coordinates(&s, &camera_position, &dir, &roll_angle);
-        screen_edges(&c);
+        ClearBackground(BLACK);
+
+        //MyVector3 screen_origin_pos = generate_screen(origin_pos, screenWidth, screenHeight);
+        //DrawLine(0,(int)screen_origin_pos.y, screenWidth, (int)screen_origin_pos.y, BLUE);
+        //DrawLine((int)screen_origin_pos.x, 0, (int)screen_origin_pos.x, screenHeight, BLUE);
+
+        draw_model(base, r_6_actual, &camera_position, &dir, &roll_angle, screenWidth, screenHeight, map_base_color, scale_input_base, &rotation_input_base, translation_input_base );
+
+        draw_model(hex, r_5_actual, &camera_position, &dir, &roll_angle, screenWidth, screenHeight, map_hex_color, scale_input_hex, &rotation_input_hex, translation_input_hex);
+        rotation_input_hex.angle += .5f * PI *dt;
+
         if (IsKeyDown(KEY_DOWN)) {
             camera_position.z += .01f;
         }
@@ -184,7 +260,7 @@ int main(void)
             roll_angle.v_y.x -= 1;
             roll_angle.v_y.y -= 1;
         }
-        r_5_actual = axis_angle_rotate( a_5, r_angle_5);
+        //r_5_actual = axis_angle_rotate( a_5, r_angle_5);
         EndDrawing();
         //----------------------------------------------------------------------------------
     }

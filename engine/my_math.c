@@ -2,21 +2,47 @@
 #include "math.h"
 #include "raylib.h"
 
-Coordinates screen_coordinates (const Screen* s, MyVector3* cp, MyVector3* dir, MyMatrix2x3* roll_angle){
+MyMatrix4x4 generate_model (MyVector3 s_matrix_input, RotationInput* rot_input, MyVector3 t_matrix_input){
+      MyMatrix4x4 s_matrix_4x4 = {
+        .m_4x4 = {
+          {s_matrix_input.x, 0, 0, 0},
+          {0,s_matrix_input.y, 0, 0},
+          {0,0,s_matrix_input.z, 0},
+          {0,0,0,1}
+        }
+      };
 
-  Coordinates out = {
-    .c = {0}
-  };
-  for (int i = 0; i < 8; i++) {
-      MyVector3 t3 = {0,0,2};
+      MyMatrix3x3 r_matrix = axis_angle_rotate(rot_input->axis, rot_input->angle);
 
-      MyVector3 rotate_vector = matrix_vector_mul(s->rotation_m_3x3, s->hexadron.model[i]);
+      MyMatrix4x4 r_matrix_4x4 = {
+        .m_4x4 = {
+          {r_matrix.m_3x3[0][0], r_matrix.m_3x3[0][1], r_matrix.m_3x3[0][2], 0},
+          {r_matrix.m_3x3[1][0], r_matrix.m_3x3[1][1], r_matrix.m_3x3[1][2], 0},
+          {r_matrix.m_3x3[2][0], r_matrix.m_3x3[2][1], r_matrix.m_3x3[2][2], 0},
+          {0,0,0,1}
+        }
+      };
+      
+      MyMatrix4x4 t_matrix_4x4 = {
+        .m_4x4 = {
+          {1, 0, 0, t_matrix_input.x},
+          {0,1, 0, t_matrix_input.y},
+          {0,0,1, t_matrix_input.z},
+          {0,0,0,1}
+        }
+      };
+      
+      MyMatrix4x4 s_r_matrix_4x4 =  matrix_mul_4x4(r_matrix_4x4,s_matrix_4x4);
+      MyMatrix4x4 s_r_t_matrix_4x4 = matrix_mul_4x4(t_matrix_4x4, s_r_matrix_4x4);
+      return s_r_t_matrix_4x4;
+}
+ 
 
-      //view the scene through the cameria via the view matrix
-      //get the view matrix
-
+MyVector3 generate_view(MyVector3 v_3, MyVector3* cp, MyVector3* dir, MyMatrix2x3* roll_angle) {
       //rolling
       //MyMatrix4x4 v_matrix = view_matrix(&(MyVector3){cos(roll_angle->v_x.x * (PI/180)),sin(roll_angle->v_x.y * (PI/180)),0}, &(MyVector3){cos((roll_angle->v_y.x + 90) * (PI/180)),sin((roll_angle->v_y.y + 90) * (PI/180)),0}, &(MyVector3){0,0,dir->z}, &(MyVector3){cp->x,cp->y,cp->z}); //right, up, direction, camera position
+
+      //yawing
       MyVector3 v_x = {
         cos(roll_angle->v_x.x * (PI/180)),
         0, 
@@ -28,48 +54,58 @@ Coordinates screen_coordinates (const Screen* s, MyVector3* cp, MyVector3* dir, 
         0,
         sin((roll_angle->v_y.y + 90) * (PI/180))
       };
-      //yawing
+
       MyMatrix4x4 v_matrix = view_matrix(&v_x, &(MyVector3){0,1,0}, &v_z, &(MyVector3){cp->x,cp->y,cp->z}); //right, up, direction, camera position
+
       //MyVector3 translated_pos = matrix_vector_mul_4x4(&v_matrix, &s->hexadron.model[i]);
-      MyVector3 translated_pos = matrix_vector_mul_4x4(&v_matrix, &rotate_vector);
+      MyVector3 view_pos = matrix_vector_mul_4x4(&v_matrix, &v_3);
+      return view_pos;
+}
 
-      Vector2 projected_pos = project(translated_pos);
-      
-      Vector2 screen_pos = screen(projected_pos, s->width, s->height);
-      out.c[i] = screen_pos;
+void draw_model ( Base b, MyMatrix3x3 r_matrix,  MyVector3* cp, MyVector3* dir, MyMatrix2x3* roll_angle, int width, int height, Color* color, MyVector3 s_matrix_input, RotationInput* rot_input, MyVector3 t_matrix_input) {
 
-     // DrawLine(0,0, cos(roll_angle->v_x.x * (PI/180)), sin(roll_angle->v_x.y * (PI/180)), GREEN);
-      //DrawLine(0, 0, cos((roll_angle->v_y.x + 90) * (PI/180)),sin((roll_angle->v_y.y + 90) * (PI/180)), ORANGE);
+  MyMatrix4x4 model_matrix = generate_model(s_matrix_input, rot_input, t_matrix_input);
+
+  for (int i = 0 ; i < b.i_count; i++) {
+
+    //get the Vector3 vector using the mapping 
+    //MyVector3 model_vector =  matrix_vector_mul_4x4(&model_matrix, &v);
+    MyVector3 v_start_model = matrix_vector_mul_4x4(&model_matrix,&b.v[b.indices_mapping[i].a]);
+    MyVector3 v_end_model = matrix_vector_mul_4x4(&model_matrix,&b.v[b.indices_mapping[i].b]);
+    //MyVector3 v_start_model = generate_model(b.v[b.indices_mapping[i].a], r_matrix);
+    //MyVector3 v_end_model = generate_model(b.v[b.indices_mapping[i].b], r_matrix);
+
+    MyVector3 v_start_view = generate_view(v_start_model, cp, dir, roll_angle);
+    MyVector3 v_end_view = generate_view(v_end_model, cp, dir, roll_angle);
+
+    //MyVector3 v_start_view = generate_view(b.v[b.indices_mapping[i].a], cp, dir, roll_angle);
+    //MyVector3 v_end_view = generate_view(b.v[b.indices_mapping[i].b], cp, dir, roll_angle);
+
+    MyVector3 v_start_projection = generate_projection(v_start_view);
+    MyVector3 v_end_projection = generate_projection(v_end_view);
+
+    MyVector3 v_start_screen = generate_screen(v_start_projection, width, height);
+    MyVector3 v_end_screen = generate_screen(v_end_projection, width, height);
+
+    // convert them to 2D
+    Vector2 p_start = convert_3D_to_2D(v_start_screen);
+    Vector2 p_end = convert_3D_to_2D(v_end_screen);
+
+    // pass to draw line function.
+    DrawLineV(p_start, p_end, color[i] );
   }
-  return out; 
 }
 
-void screen_edges (Coordinates* c) {
-  int vertix_map_1[12][2] = {
-    {0, 4}, 
-    {1, 0}, 
-    {2, 6},
-    {3, 2},
-    {4, 5},
-    {5, 1}, 
-    {6, 7}, 
-    {7, 3},
-    {0, 2},
-    {1, 3},
-    {4, 6},
-    {5, 7}     
-   };
-   for (int i = 0 ; i < 12; i++) {
-      DrawLineV(c->c[vertix_map_1[i][0]], c->c[vertix_map_1[i][1]], RED );
-   }
+MyVector3 generate_screen (MyVector3 vec3, int screenWidth, int screenHeight) {
+  return (MyVector3){ (vec3.x + 1)/2 * screenWidth, ( 1- (vec3.y + 1)/2) * screenHeight, vec3.z};
 }
 
-Vector2 screen (Vector2 vec2, int screenWidth, int screenHeight) {
-  return (Vector2){ (vec2.x + 1)/2 * screenWidth, ( 1- (vec2.y + 1)/2) * screenHeight};
+MyVector3 generate_projection (MyVector3 vec3){
+  return (MyVector3){vec3.x/vec3.z, vec3.y/vec3.z, vec3.z};
 }
 
-Vector2 project (MyVector3 vec3){
-  return (Vector2){vec3.x/vec3.z, vec3.y/vec3.z};
+Vector2 convert_3D_to_2D (MyVector3 vec3){
+  return (Vector2){vec3.x, vec3.y};
 }
 
 Hexahedron generate_hexahedron_model(MyVector3 vector)
@@ -180,6 +216,7 @@ MyVector3 matrix_vector_mul(MyMatrix3x3 mat1, MyVector3 vec3) {
   };
 }
 
+
 MyVector3 matrix_vector_mul_4x4(MyMatrix4x4* v4_m, MyVector3* v3) {
     MyVector4 v4 =  {
       v3->x,
@@ -260,6 +297,20 @@ MyMatrix3x3 matrix_mul(MyMatrix3x3 mat1, MyMatrix3x3 mat2) {
       (mat1.m_3x3[row][0] * mat2.m_3x3[0][col]) +
       (mat1.m_3x3[row][1] * mat2.m_3x3[1][col]) + 
       (mat1.m_3x3[row][2] * mat2.m_3x3[2][col]);
+    }
+  }
+  return result;
+}
+
+MyMatrix4x4 matrix_mul_4x4(MyMatrix4x4 mat1, MyMatrix4x4 mat2) {
+  MyMatrix4x4 result = {0};
+  for (int row = 0; row < 4; row++ ) {
+    for ( int col = 0; col < 4; col++) { 
+      result.m_4x4[row][col] = 
+      (mat1.m_4x4[row][0] * mat2.m_4x4[0][col]) +
+      (mat1.m_4x4[row][1] * mat2.m_4x4[1][col]) + 
+      (mat1.m_4x4[row][2] * mat2.m_4x4[2][col]) +
+      (mat1.m_4x4[row][3] * mat2.m_4x4[3][col]);
     }
   }
   return result;
