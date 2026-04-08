@@ -1,0 +1,8 @@
+CompileFlags:
+  CompilationDatabase: __out/build/windows_msvc
+  Add:
+    - --driver-mode=cl
+    - -IC:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.40.33807/include
+    - -IC:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/ucrt
+    - -IC:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/shared
+    - -IC:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/um

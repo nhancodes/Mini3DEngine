@@ -3,3 +3,12 @@
 .vscode
 .cache
 __out
+# CPM / dependency artifacts
+CPM_modules/
+_deps/
+cpm-package-lock.cmake
+
+# MSVC artifacts
+*.pdb
+CMakeFiles/
+build/

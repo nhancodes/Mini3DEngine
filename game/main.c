@@ -1,10 +1,10 @@
 #include "raylib.h"
-#include "engine.h"
-#include "my_math.h"
+#include "../engine/engine.h"
+#include "../engine/my_math.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h> 
-#include "test.h"
+#include "../test/test.h"
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------

@@ -27,6 +27,7 @@ typedef struct {
   Int2* indices_mapping;
   int i_count;
 } Base;
+
 typedef struct
 {
   float x;
